@@ -1,0 +1,29 @@
+wids_2026/
+├── data/
+│   ├── raw/                 # 原始資料（Kaggle下載）
+│   │   ├── train.csv
+│   │   ├── test.csv
+│   │   ├── metaData.csv
+│   │   ├── sample_submission.csv
+│   │   └── WiDSWorldWide_GlobalDathon26.zip
+│   │
+│   ├── processed/           # 清理後資料（之後用）
+│   └── submissions/         # 產生的 submission.csv
+│
+├── notebooks/               # EDA / 測試用
+│   └── eda.ipynb
+│
+├── src/                     # 主要程式碼
+│   ├── data/
+│   ├── features/
+│   ├── models/
+│   └── utils/
+│
+├── scripts/                 # 一次性腳本
+│   └── download_data.sh
+│
+├── configs/                 # 參數設定（之後進階用）
+│
+├── README.md
+├── .gitignore
+└── main.py                  # 主程式入口（之後會用）
