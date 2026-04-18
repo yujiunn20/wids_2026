@@ -1,0 +1,132 @@
+Data structure and an training example
+
+event_id: 11757157
+
+* Receive: Features computed strictly from the first five hours after initial perimeter detection. These represent early spread dynamics and spatial relationships to evacuation zones.
+* Predict: Four probabilities for each fire. Each probability represents the likelihood that the fire comes within 5 km of an evacuation zone centroid by the horizon. prob_12h prob_24h prob_48h prob_72h.
+
+
+Labels: 
+
+- Temporal Coverage (first 5h only)
+1. num_perimeters_0_5h: Number of perimeters within first 5 hours, ex. 2
+2. dt_first_last_0_5h: Time span between first and last perimeter (hours), ex. 1.1699176616666669
+3. low_temporal_resolution_0_5h: Flag, 1 if dt < 0.5h or only 1 perimeter, else 0, ex. 0
+
+- Growth Features
+4. area_first_ha: Initial fire area at t0 (hectares), ex. 8.946749378249011
+5. area_growth_abs_0_5h: Absolute area growth (hectares), ex. 0.0
+6. area_growth_rel_0_5h: Relative area growth (fraction), ex. 0.0
+7. area_growth_rate_ha_per_h: Area growth rate (hectares/hour), ex. 0.0
+
+8. log1p_area_first: Log(1 + initial area), ex. 2.2972458021404853
+9. log1p_growth: Log(1 + absolute growth),  ex. 0.0
+10. log_area_ratio_0_5h: Log ratio of final to initial area, ex. 0.0 
+11. relative_growth_0_5h: Relative growth (same as area_growth_rel_0_5h), ex. 0.0 
+
+12. radial_growth_m: Change in effective radius (meters), ex. 0.0
+13. radial_growth_rate_m_per_h: Rate of radial growth (meters/hour), ex. 0.0
+
+- Centroid Kinematics
+14. centroid_displacement_m: Total displacement of fire centroid (meters), ex. 0.0
+15. centroid_speed_m_per_h: Speed of centroid movement (meters/hour), ex. 0.0
+16. spread_bearing_deg: Bearing/direction of fire spread (degrees), ex. 0.0
+17. spread_bearing_sin: Sine of spread bearing (circular encoding), ex. 0.0
+18. spread_bearing_cos: Cosine of spread bearing (circular encoding), ex. 1.0
+
+- Distance to Evacuation Zone Centroids
+19. dist_min_ci_0_5h: Minimum distance to nearest evac zone centroid (meters), ex. 2930.925956098736
+20. dist_std_ci_0_5h: Standard deviation of distances, ex. 0.0
+21. dist_change_ci_0_5h: Change in distance (d5 - d0, negative = closing), ex. 0.0
+22. dist_slope_ci_0_5h: Linear slope of distance vs time (meters/hour), ex. -3.88700304121087e-13
+23. closing_speed_m_per_h: Speed at which fire is closing distance (m/hour, positive = closing), ex. 0.0
+24. closing_speed_abs_m_per_h: Absolute closing speed, ex. 0.0
+25. projected_advance_m: Projected advance toward evac zone (d0 - d5), ex. 0.0
+26. dist_accel_m_per_h2: Acceleration in distance change (meters/hour^2), ex. 0.0
+27. dist_fit_r2_0_5h: R^2 of linear fit to distance vs time, ex. 0.0
+
+- Directionality
+28. alignment_cos: Cosine of angle between fire motion and evac direction, ex. -0.5688982113791312
+29. alignment_abs: Absolute alignment between fire motion and evac direction (0-1, higher = more aligned), ex. 0.5688982113791312
+30. cross_track_component: Sideways drift component, ex. -0.0
+31. along_track_speed: Speed component toward/away from evac, ex. -0.0
+
+- Temporal Metadata
+32. event_start_hour: Hour of day when fire started (0-23), ex. 4
+33. event_start_dayofweek: Day of week (0 = Monday, 6 = Sunday), ex. 4
+34. event_start_month: Month when fire started (1-12), ex. 6
+
+*** Target(train only)
+time_to_hit_hours: Time from t0+5h until fire comes within 5 km of an evac zone (hours). For censored events (never hit within 72h), this is the last observed time within the window (<= 72). ex. 22.04810800805556
+event: Event indicator, 1 if fire hit within 72h, 0 if censored (never hit), ex. 1
+
+
+Acronyms and Short Terms
+- t0: Fire start time (first perimeter observation)
+- 5h: Feature window length (first 5 hours after t0)
+- evac: Evacuation zone
+- ci: Centroid-to-centroid distance
+
+Datasete Size:
+- Train: 221 rows (69 hits, 152 censored)
+- Test: 95 rows
+- Total fires: 316
+
+
+
+
+Should Extracted:  
+- Temporal Coverage (first 5h only)
+ num_perimeters_0_5h
+ dt_first_last_0_5h
+#(可以先拿掉) 3. low_temporal_resolution_0_5h
+
+- Growth Features
+GBM / Tree-based（LightGBM / XGBoost）
+  area_first_ha
+  area_growth_abs_0_5h
+  area_growth_rate_ha_per_h
+  radial_growth_m
+  radial_growth_rate_m_per_h
+  area_growth_rel_0_5h
+  log1p_area_first
+  log1p_growth
+  log_area_ratio_0_5h
+  (可留原始 + log，模型會自己選)
+Neural Network / Linear Model
+  log1p_area_first
+  log1p_growth
+  log_area_ratio_0_5h
+  area_growth_rate_ha_per_h
+  radial_growth_rate_m_per_h
+  area_growth_rel_0_5h
+ （偏向用 log / rate，避免原始尺度）
+
+- Centroid Kinematics
+  centroid_speed_m_per_h
+  (之後更進階centroid_speed_m_per_h + dt_first_last_0_5h + num_perimeters_0_5h)
+
+- Distance to Evacuation Zone Centroids
+GBM / Tree-based
+  dist_min_ci_0_5h            # 距離（最重要）
+  closing_speed_m_per_h       # 是否在接近（核心）
+  dist_slope_ci_0_5h          # 距離變化速度（≈ closing_speed）
+  dist_change_ci_0_5h         # 總變化量（可留）  
+  dist_std_ci_0_5h            # 距離變動（穩不穩）
+  dist_fit_r2_0_5h            # 線性趨勢可信度
+
+Neural Network / Linear
+  dist_min_ci_0_5h
+  closing_speed_m_per_h
+  dist_slope_ci_0_5h
+  dist_std_ci_0_5h
+
+
+- Directionality
+alignment_cos
+along_track_speed
+
+- Temporal Metadata
+ event_start_hour: Hour of day when fire started (0-23)
+ event_start_dayofweek: Day of week (0 = Monday, 6 = Sunday)
+ event_start_month: Month when fire started (1-12)
