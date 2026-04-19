@@ -23,6 +23,20 @@ def get_GBM_feature_columns():
         "event_start_hour",
         "event_start_dayofweek",
         "event_start_month",
+
+        "growth_dist_interaction",
+        "speed_alignment",
+        "closing_ratio",
+        "growth_acceleration",
+        "log_dist",
+        "inv_dist",
+        "growth_over_dist",
+        "hour_bucket",
+        "movement_consistency",
+        "area_ratio",
+        "directional_risk",
+        "growth_norm",
+        "movement_strength",
     ]
 
 def get_NN_feature_columns():
@@ -45,4 +59,18 @@ def get_NN_feature_columns():
         "event_start_hour",
         "event_start_dayofweek",
         "event_start_month",
+
+        "growth_dist_interaction",
+        "speed_alignment",
+        "closing_ratio",
+        "growth_acceleration",
+        "log_dist",
+        "inv_dist",
+        "growth_over_dist",
+        "hour_bucket",
+        "movement_consistency",
+        "area_ratio",
+        "directional_risk",
+        "growth_norm",
+        "movement_strength",
     ]
