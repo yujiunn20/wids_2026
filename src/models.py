@@ -8,13 +8,14 @@ from sklearn.neural_network import MLPClassifier
 def get_model(model_name: str):
     if model_name == "lgbm":
         return LGBMClassifier(
-            n_estimators=80,
+            n_estimators=120,
             learning_rate=0.05,
             max_depth=3,
             num_leaves=10,
-            min_child_samples=20,
+            min_child_samples=8,
             subsample=0.8,
             colsample_bytree=0.8,
+            class_weight="balanced",
             random_state=42,
             verbose=-1,
         )
